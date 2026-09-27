@@ -1,0 +1,26 @@
+{
+  "kind": "univ4_hook",
+  "hook": {
+    "contract": "ParcelHook",
+    "constructorArgs": [
+      "0x000000000004444c5dc75cb358380d2e3de08a90"
+    ],
+    "permissions": [
+      "afterSwap",
+      "afterSwapReturnDelta"
+    ]
+  },
+  "token": {
+    "contract": "Parcel",
+    "name": "Parcel",
+    "symbol": "PRCL",
+    "decimals": 18
+  },
+  "pool": {
+    "pairedCurrency": "0x0000000000000000000000000000000000000000",
+    "fee": 3000,
+    "tickSpacing": 60,
+    "initialPrice": "79228162514264337593543950336"
+  },
+  "notes": "Pass the Parcel uses native ETH as currency0 and Parcel (PRCL) as currency1. With no deployment address specified in the repository, this manifest assumes the Ethereum mainnet Uniswap v4 PoolManager listed at https://developers.uniswap.org/docs/protocols/v4/deployments. The static LP fee of 3000 (0.3%), tick spacing 60 and initial sqrtPriceX96 of 2^96 mirror the repository's tested pool configuration; this price is a 1:1 ratio of token minor units to wei. These are explicit technical parameters, not deployment authorization or allocation policy. The factory initializes the pool; beforeInitialize is disabled. Parcel has a zero-argument constructor. ParcelHook takes only the immutable PoolManager address, rejects zero and validates its address permission bits: (address & 0x3fff) == 0x0044 (68). Only afterSwap and afterSwapReturnDelta are enabled. Pots are keyed by the complete PoolId and cannot cross pools. Pools whose currency0 is not native ETH are untouched; other native ETH/token pools have independent pots. Every native-pool sell adds floor(actual gross ETH output / 100) wei and emits ParcelFilled(poolId, added, potAfter), including when rounding yields zero. A buy with actual gross ETH input of at least 1000000000000000 wei pays min(input, that pool's pot), reducing ETH owed within the same swap and retaining any excess pot. Smaller buys leave the pot unchanged. Nonzero payouts emit ParcelPassed(poolId, paid, potAfter); pot(PoolId) reports wei. Full exact-input and exact-output support requires the repository's ParcelRouter, or an adapter implementing the same settlement protocol with the same manager. Exact-output ETH sells specify gross output: the hook calls payParcelSellFee on the swap caller, which must debit its own manager ETH delta and send the exact fee to the hook. Exact-input ETH buys receive a settleFor credit. The other two modes use the afterSwap return delta. Routers must settle live currencyDelta balances and enforce net wallet slippage limits; generic routers are not automatically compatible. Fees and qualification use actual fills, including partial fills. There are no hook administrators, setters, pause, sweep, upgrades or payouts outside swaps. Ordinary swap custody equals the sum of pots; forcibly sent ETH is unassigned, cannot increase a pot and is inaccessible. The build targets Solidity 0.8.26 and Cancun."
+}
